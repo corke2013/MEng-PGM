@@ -20,7 +20,7 @@ class DisModel
 {
 public:
 	DisModel(std::vector<rcptr<Factor>>* factors, std::map<std::string, std::variant<gLinear::gColVector<double>, gLinear::gRowMatrix<double>, double>> modelParameters);
-	void buildDisModel(unsigned int timeStep, std::map<std::size_t, std::tuple<unsigned int, unsigned int, prlite::ColVector<double>, prlite::RowMatrix<double>>> timeStepData);
+	void buildDisModel(unsigned int timeStep, std::map<std::size_t, std::tuple<unsigned int, unsigned int, prlite::ColVector<double>, prlite::RowMatrix<double>>> timeStepData, std::vector<std::tuple<std::size_t, unsigned int, unsigned int>>& rvIds);
 private:
 	std::vector<rcptr<Factor>>* factors;
 	std::map<std::string, std::variant<gLinear::gColVector<double>, gLinear::gRowMatrix<double>, double>> modelParameters;

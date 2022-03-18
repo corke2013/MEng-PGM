@@ -1,28 +1,34 @@
 #include <dis_model.hpp>
 
-typedef std::size_t AssignType;
+typedef unsigned int AssignType;
 typedef DiscreteTable<AssignType> DT;
-enum { X = 1, M = 2, S = 3, R = 4 };
+enum { X = 1, M = 2, S = 3 };
 
 DisModel::DisModel(std::vector<rcptr<Factor>>* factors, std::map<std::string, std::variant<gLinear::gColVector<double>, gLinear::gRowMatrix<double>, double>> modelParameters) {
 	DisModel::factors = factors;
 	DisModel::modelParameters = modelParameters;
 }
 
-void DisModel::buildDisModel(unsigned int timeStep, std::map<std::size_t, std::tuple<unsigned int, unsigned int, prlite::ColVector<double>, prlite::RowMatrix<double>>> timeStepData) {
+void DisModel::buildDisModel(unsigned int timeStep, std::map<std::size_t, std::tuple<unsigned int, unsigned int, prlite::ColVector<double>, prlite::RowMatrix<double>>> timeStepData, std::vector<std::tuple<std::size_t, unsigned int, unsigned int>>& rvIds) {
 	rcptr< std::vector<AssignType> > binDom(new std::vector<AssignType>{ 0, 1 });
+	for (auto& [disId, disData] : timeStepData) {
+		std::size_t sij = Utils::hashFromInts(S, timeStep, std::get<0>(disData), std::get<1>(disData));
+		std::size_t xi = Utils::hashFromInts(X, timeStep, std::get<0>(disData));
+		std::size_t xj = Utils::hashFromInts(X, timeStep, std::get<1>(disData));
+		std::size_t mi = Utils::hashFromInts(M, timeStep, std::get<0>(disData));
+		std::size_t mj = Utils::hashFromInts(M, timeStep, std::get<1>(disData));
+		rvIds.push_back(std::make_tuple(sij, std::get<0>(disData), std::get<1>(disData)));
 
-	for (auto [disId, disData] : timeStepData) {
 		// p(Sij|Xi, Xj, Mi, Mj)
 		factors->push_back(
 			uniqptr<DT>(
 				new DT(
 					{
-						Utils::hashFromInts(S, timeStep, std::get<0>(disData), std::get<1>(disData)),
-						Utils::hashFromInts(X, timeStep, std::get<0>(disData)),
-						Utils::hashFromInts(X, timeStep, std::get<1>(disData)),
-						Utils::hashFromInts(M, timeStep, std::get<0>(disData)),
-						Utils::hashFromInts(M, timeStep, std::get<1>(disData))
+						sij,
+						xi,
+						xj,
+						mi,
+						mj
 					},
 					{
 						binDom,
@@ -68,7 +74,7 @@ void DisModel::buildDisModel(unsigned int timeStep, std::map<std::size_t, std::t
 			uniqptr<DT>(
 				new DT(
 					{
-						Utils::hashFromInts(S, timeStep, std::get<0>(disData), std::get<1>(disData))
+						sij
 					},
 					{
 						binDom
